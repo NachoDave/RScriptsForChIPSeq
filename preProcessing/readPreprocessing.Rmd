@@ -1,0 +1,61 @@
+---
+title: "Trimming Reads that fall below quality standards" 
+author: "Author: David James (d.w.james@swansea.ac.uk)" 
+date: "Last update: `r format(Sys.time(), '%d %B, %Y')`"
+---
+## Import Short read
+```{r ,warning=FALSE,message=FALSE, setup}
+library(ShortRead) # import short read library
+```
+
+## Import Trim Function
+``` {r}
+source('/home/rstudio/scripts/readTrimming.R') # import trimming functions
+#source('/home/rstudio/scripts/preProcessing/readTrimming.R') # import trimming functions
+
+```
+
+Removing reads from fastq files with x non defined (N) bases and y Phred scores below a threshold (where x, y and threshold are user defined).
+
+## Input Arguments
+
+```{r iparse nput arguments}
+args = commandArgs(trailingOnly = TRUE)
+fnIn <- args[1] # input filename -this is the only compulsory argument
+
+# Check for filename arguments
+if (length(args) == 1){
+  fnOut <- sprintf("%s_trim.fastq", gsub('.fastq','', fnIn))
+} else {fnOut <- args[2]}
+
+# Check for number of undefined bases
+if (length(args) < 3){
+  uDefB = 1
+} else {uDefB = as.integer(args[3])}
+
+# Check for number of nucleotides below a certain Phred score
+if (length(args) < 4){
+  nBs = 5
+} else {nBs = as.integer(args[4])}
+
+# Threshold on Phred score
+if (length(args) < 5){
+  thres = 30
+} else {thres = as.integer(args[5])}
+
+```
+## Filtering using filqFilt() function
+* Input file `r fnIn`
+* Output file for retained reads `r fnOut`
+* Output file for removed reads `r sprintf("%s", gsub('.fastq', 'X.fastq', fnOut) ) `
+* Reads with more than `r uDefB` undefined bases removed.
+* Reads with more than `r nBs` bases with Phred score less than `r thres` removed
+
+
+```{r}
+
+cnts = fastqFilt(fnIn, thres, nBs, uDefB, fnOut)
+
+```
+From `r cnts[1]` reads `r cnts[3]` were removed after failing quality check
+

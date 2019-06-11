@@ -1,0 +1,64 @@
+---
+title: "ChIP-Seq Gene Finder" 
+author: "Author: David James (d.w.james@swansea.ac.uk)" 
+date: "Last update: `r format(Sys.time(), '%d %B, %Y')`"
+---
+
+Finding the genes. 
+
+```{r setup}
+source('/home/rstudio/scripts/findGeneReadFunctions.R')
+source('/home/rstudio/scripts/findGenes.R')
+source('/home/rstudio/scripts/findGeneFunctions.r')
+source('/home/rstudio/scripts/reformatMACSOut.R')
+
+args <- commandArgs(trailingOnly = TRUE)
+peaksFile = args[1]
+programme = args[2]
+geneFile= args[3] #'../geneTable/NCBIgenes301014_ensembldesc171114.xls'
+outputPath = args[4]
+
+if (length(args) > 4){
+dist = as.numeric(args[5])
+}else {
+  
+  dist = 10000
+}
+if (length(args) > 5){
+pValue = as.numeric(args[6])
+} else {
+  
+  pValue = 1
+}
+if (length(args) > 6){
+  FDR = as.numeric(args[7])
+} else {
+  FDR = 100
+}
+
+
+print(geneFile)
+print(peaksFile)
+print(outputPath)
+print(programme)
+
+
+if (programme == 'MACS'){
+  reformatMACSOut(peaksFile)  
+}
+
+```
+
+## Run the gene finder
+
+```{r run gene finder}
+
+if (programme == 'MACS'){
+peaksFileMod = gsub('.xls', '_modified.xls', peaksFile)
+} else {
+  peaksFileMod = peaksFile
+}
+
+findGenes(peaksFileMod,programme,geneFile,dist,pValue,FDR,outputPath)
+
+```

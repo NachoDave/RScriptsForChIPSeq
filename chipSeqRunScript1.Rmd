@@ -1,0 +1,123 @@
+---
+title: "ChIP-Seq Preprocessing" 
+author: "Author: David James (d.w.james@swansea.ac.uk)" 
+date: "Last update: `r format(Sys.time(), '%d %B, %Y')`" 
+output:
+  BiocStyle::pdf_document: default
+  BiocStyle::html_document:
+    toc_float: true
+    code_folding: show
+package: systemPipeR
+vignette: |
+  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{ChIP-Seq Workflow Template}
+  %\VignetteEngine{knitr::rmarkdown}
+#fontsize: 14pt
+#bibliography: bibtex.bib
+---
+
+```{css, echo=FALSE}
+pre code {
+white-space: pre !important;
+overflow-x: scroll !important;
+word-break: keep-all !important;
+word-wrap: initial !important;
+}
+```
+
+<!--
+- Compile from command-line
+Rscript -e "rmarkdown::render('systemPipeChIPseq.Rmd', c('BiocStyle::html_document'), clean=F); knitr::knit('systemPipeChIPseq.Rmd', tangle=TRUE)"; Rscript ../md2jekyll.R systemPipeChIPseq.knit.md 13; Rscript -e "rmarkdown::render('systemPipeChIPseq.Rmd', c('BiocStyle::pdf_document'))"
+-->
+
+```{r style, echo = FALSE, results = 'asis'}
+BiocStyle::markdown()
+options(width=60, max.print=1000)
+knitr::opts_chunk$set(
+    eval=as.logical(Sys.getenv("KNITR_EVAL", "TRUE")),
+    cache=as.logical(Sys.getenv("KNITR_CACHE", "TRUE")), 
+    tidy.opts=list(width.cutoff=60), tidy=TRUE)
+```
+
+```{r setup, echo=FALSE, messages=FALSE, warnings=FALSE}
+suppressPackageStartupMessages({
+    library(systemPipeR)
+    library(BiocParallel)
+    library(Biostrings)
+    library(Rsamtools)
+    library(GenomicRanges)
+    library(ggplot2)
+    library(GenomicAlignments)
+    library(ShortRead)
+    #library(ape)
+    library(batchtools)
+})
+```
+
+# Introduction
+Information about the processing
+
+```{r set_path, eval=TRUE}
+knitr::opts_knit$set(root.dir = '/home/rstudio/data/CurryExample/')
+```
+
+# Generate work flow (don't need this)
+```{r genChip_workflow, eval=FALSE}
+library(systemPipeRdata)
+#genWorkenvir(workflow="chipseq")
+#setwd("chipseq")
+```
+# Read in reads
+# Read preprocessing
+
+## Experiment definition provided by `targets` file
+
+The `targets` file defines all FASTQ files and sample comparisons of the analysis workflow.
+
+```{r load_targets_file, eval=TRUE}
+setwd("~/data/CurryExample/")
+getwd()
+targetspath <- "./targets.txt"
+targets <- read.delim(targetspath, comment.char = "#")
+targets
+```
+
+# Read trimming 
+
+```{r trim_dem_reads}
+setwd("~/data/CurryExample/")
+args <- systemArgs(sysma="./params/trim.param", mytargets="./targets.txt")
+print(args)
+filterFct <- function(fq, cutoff=30, Nexceptions=5) {
+    filt <- nFilter(threshold = 1)
+    fq <- fq[filt(fq)] # Remove reads with any N bases
+  
+    qcount <- rowSums(as(quality(fq), "matrix") <= cutoff, na.rm=TRUE)
+    fq[qcount <= Nexceptions] 
+    # Retains reads where Phred scores are >= cutoff with N exceptions
+    
+    
+
+}
+preprocessReads(args=args, Fct="filterFct(fq, cutoff=30, Nexceptions=5)", 
+                batchsize=100000)
+writeTargetsout(x=args, file="targets_chip_trim.txt", overwrite=TRUE)
+```
+
+# Preprocessing Quality
+The following `seeFastq` and `seeFastqPlot` functions generate and plot a series of useful quality statistics for a set of FASTQ files including per cycle quality box
+plots, base proportions, base-level quality trends, relative k-mer
+diversity, length and occurrence distribution of reads, number of reads
+above quality cutoffs and mean quality distribution. The results are
+written to a PDF file named `fastqReport.pdf`.
+
+```{r fastq_report, eval=TRUE}
+setwd("~/data/CurryExample/")
+fqlist <- seeFastq(fastq=infile1(args), batchsize=10000, klength=8)
+pdf("./results/fastqReport.pdf", height=18, width=4*length(fqlist))
+seeFastqPlot(fqlist)
+dev.off()
+
+```
+
+
