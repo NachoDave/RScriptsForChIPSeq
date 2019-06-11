@@ -33,12 +33,12 @@ generatePeakTable = function(peaks,genes,GeneInds){
 	downstream=GeneInds[[2]]
 	upstream=GeneInds[[3]]
 	
-	peakTable=array(NA,dim=c(length(peaks[,1]),11))
+	peakTable=array(NA,dim=c(length(peaks[,1]),13))
 	peakTable=data.frame(peakTable)
 	colnames(peakTable)=c(colnames(peaks),"Genes","Peak.Pos","Dist.to.Start")
 
 	for(peak in 1:length(peaks[,1])){
-		peakTable[peak,1:8]=peaks[peak,]
+		peakTable[peak,1:10]=peaks[peak,]
 		ingene_genes=as.character(genes$Gene_name[ingene[[peak]]])
 		downstream_genes=as.character(genes$Gene_name[downstream[[peak]]])
 		upstream_genes=as.character(genes$Gene_name[upstream[[peak]]])
@@ -48,7 +48,7 @@ generatePeakTable = function(peaks,genes,GeneInds){
 		upstream_tags=rep("upstream",length(upstream[[peak]]))
 		taglist=paste(c(ingene_tags,downstream_tags,upstream_tags),collapse=", ")
 		dists=paste(genes$Gene_start_bp[c(ingene[[peak]],downstream[[peak]],upstream[[peak]])]-peaks$summit[peak],collapse=", ")
-		peakTable[peak,9:11]=c(genelist,taglist,dists)
+		peakTable[peak,11:13]=c(genelist,taglist,dists)
 	}
 	
 	peakTable
@@ -65,7 +65,7 @@ generateGeneTable = function(peaks,genes,GeneInds,peakTable,fileName){
 	geneTable=data.frame(geneTable)
   geneColNms = colnames(genes)
 	colnames(geneTable)=c(geneColNms[c(6,3,1,4,5,7,2,8)],"Peak.Pos","Dist.to.Gene.Start","Peaks")
-	browser()
+	#browser()
 	for(gene in 1:length(allGeneInds)){
 	  # Chromosome
 	  if(genes$Chromosome[allGeneInds[gene]] == 998){

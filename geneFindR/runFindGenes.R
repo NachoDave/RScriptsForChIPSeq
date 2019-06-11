@@ -4,9 +4,9 @@ source('/home/rstudio/scripts/geneFindR/findGeneFunctions.r')
 source('/home/rstudio/scripts/geneFindR/reformatMACSOut.R')
 
 args <- commandArgs(trailingOnly = TRUE)
-args <- c('/home/rstudio/data2/WT1_300519/results/peakCalls/1_PCOS_AR_i7_filteredhg38_trim_bowtie2UPBlkLstRm_MACS_peaks.xls',
+args <- c('/home/rstudio/data/WT1_300519/results/peakCalls/1_PCOS_AR_i7_filteredhg38_trim_bowtie2UPBlkLstRm_MACS_peaks.xls',
           'MACS', '/home/rstudio/scripts/geneTable/GeneCoordinates_ENSEMBL_Biomart150319sorted.txt',
-          '/home/rstudio/data2/WT1_300519/testOut.xls')
+          '/home/rstudio/data/WT1_300519/testOut.xls')
 
 #args <- c('/home/rstudio/data2/testChr20_21PeakFile.xls',
 #          'MACS', '/home/rstudio/scripts/geneTable/GeneCoordinates_ENSEMBL_Biomart150319sorted.txt',
