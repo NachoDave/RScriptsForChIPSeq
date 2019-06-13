@@ -15,7 +15,7 @@ findGenes = function(peaksfile,programme,genefile,dist,pvalue,FDR,output){
 		
 	#Remove insignificant peaks.
 	peaks=findSignificantPeaks(peaks,FDR,pvalue)
-	
+	#browser()
 	#Find gene indices
 	GeneInds=findGeneInds(peaks,genes,dist)
 	

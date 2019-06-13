@@ -36,9 +36,18 @@ generatePeakTable = function(peaks,genes,GeneInds){
 	peakTable=array(NA,dim=c(length(peaks[,1]),13))
 	peakTable=data.frame(peakTable)
 	colnames(peakTable)=c(colnames(peaks),"Genes","Peak.Pos","Dist.to.Start")
-
+  #browser()
 	for(peak in 1:length(peaks[,1])){
-		peakTable[peak,1:10]=peaks[peak,]
+		peakTable[peak, 2:10]=peaks[peak,2:10]
+		
+		if (peaks[peak, 1] == 998){
+		  peakTable[peak, 1] = as.character('X')
+		} else if (peaks[peak, 1] == 999){
+		  peakTable[peak, 1] = as.character('Y')
+		} else {
+		  peakTable[peak, 1] = peaks[peak,1]
+		}
+		
 		ingene_genes=as.character(genes$Gene_name[ingene[[peak]]])
 		downstream_genes=as.character(genes$Gene_name[downstream[[peak]]])
 		upstream_genes=as.character(genes$Gene_name[upstream[[peak]]])
