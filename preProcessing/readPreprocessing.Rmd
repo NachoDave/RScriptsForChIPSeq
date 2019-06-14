@@ -57,14 +57,14 @@ fnIn2 <- args[3] # input filename 2 -this is the only compulsory argument
   
       fnIn <- args[2] # input filename -this is the only compulsory argument
     # Check for filename arguments
-    if (length(args) == 2){
+    if (length(args) == 3){
       fnOut <- gsub('.fastq','_trim.fastq', fnIn)
-    } else {fnOut <- args[2]}
+    } else {fnOut <- args[3]}
     
     # Check for number of undefined bases
     if (length(args) < 4){
       uDefB = 1
-    } else {uDefB = as.integer(args[3])}
+    } else {uDefB = as.integer(args[4])}
     
     # Check for number of nucleotides below a certain Phred score
     if (length(args) < 5){
