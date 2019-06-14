@@ -5,6 +5,7 @@ date: "Last update: `r format(Sys.time(), '%d %B, %Y')`"
 ---
 ## Import Short read
 ```{r ,warning=FALSE,message=FALSE, setup}
+rm(list=ls())
 library(ShortRead) # import short read library
 ```
 
@@ -21,41 +22,102 @@ Removing reads from fastq files with x non defined (N) bases and y Phred scores 
 
 ```{r iparse nput arguments}
 args = commandArgs(trailingOnly = TRUE)
-fnIn <- args[1] # input filename -this is the only compulsory argument
-
+PE <- args[1] # Pairended Y/N
+print(PE)
+if (PE == 'Y'){ # command line args pairended reads
+  
+fnIn1 <- args[2] # input filename 1 -this is the only compulsory argument
+fnIn2 <- args[3] # input filename 2 -this is the only compulsory argument
 # Check for filename arguments
-if (length(args) == 1){
-  fnOut <- sprintf("%s_trim.fastq", gsub('.fastq','', fnIn))
-} else {fnOut <- args[2]}
 
-# Check for number of undefined bases
-if (length(args) < 3){
-  uDefB = 1
-} else {uDefB = as.integer(args[3])}
+  if (length(args) <= 3){
+    fnOut1 <-  gsub('.fastq','_trim.fastq', fnIn1)
+  } else {fnOut1 <- args[4]}
+  
+  if (length(args) == 3){
+    fnOut2 <- gsub('.fastq','_trim.fastq', fnIn2)
+  } else {fnOut2 <- args[5]}
 
-# Check for number of nucleotides below a certain Phred score
-if (length(args) < 4){
-  nBs = 5
-} else {nBs = as.integer(args[4])}
+    # Check for number of undefined bases
+    if (length(args) < 6){
+      uDefB = 1
+    } else {uDefB = as.integer(args[6])}
+    
+    # Check for number of nucleotides below a certain Phred score
+    if (length(args) < 7){
+      nBs = 5
+    } else {nBs = as.integer(args[7])}
+    
+    # Threshold on Phred score
+    if (length(args) < 8){
+      thres = 30
+    } else {thres = as.integer(args[8])}
+  
+}else if (PE == 'N'){ # Command line arguments for non-pair ended reads
+  
+      fnIn <- args[2] # input filename -this is the only compulsory argument
+    # Check for filename arguments
+    if (length(args) == 2){
+      fnOut <- gsub('.fastq','_trim.fastq', fnIn)
+    } else {fnOut <- args[2]}
+    
+    # Check for number of undefined bases
+    if (length(args) < 4){
+      uDefB = 1
+    } else {uDefB = as.integer(args[3])}
+    
+    # Check for number of nucleotides below a certain Phred score
+    if (length(args) < 5){
+      nBs = 5
+    } else {nBs = as.integer(args[5])}
+    
+    # Threshold on Phred score
+    if (length(args) < 6){
+      thres = 30
+    } else {thres = as.integer(args[6])}
+  
+}else
+{
+  stop('Need to specify whether pairended or not using Y or N')
+}
 
-# Threshold on Phred score
-if (length(args) < 5){
-  thres = 30
-} else {thres = as.integer(args[5])}
+
+# fnIn <- args[1] # input filename -this is the only compulsory argument
+# 
+# # Check for filename arguments
+# if (length(args) == 1){
+#   fnOut <- sprintf("%s_trim.fastq", gsub('.fastq','', fnIn))
+# } else {fnOut <- args[2]}
+# 
+# # Check for number of undefined bases
+# if (length(args) < 3){
+#   uDefB = 1
+# } else {uDefB = as.integer(args[3])}
+# 
+# # Check for number of nucleotides below a certain Phred score
+# if (length(args) < 4){
+#   nBs = 5
+# } else {nBs = as.integer(args[4])}
+# 
+# # Threshold on Phred score
+# if (length(args) < 5){
+#   thres = 30
+# } else {thres = as.integer(args[5])}
 
 ```
 ## Filtering using filqFilt() function
-* Input file `r fnIn`
-* Output file for retained reads `r fnOut`
-* Output file for removed reads `r sprintf("%s", gsub('.fastq', 'X.fastq', fnOut) ) `
+* Input file(s) `r if (exists('fnIn')) {fnIn}``r if (exists('fnIn1')){fnIn1}`, `r if (exists('fnIn2')){fnIn2}`
+* Output file for retained reads `r if (exists('fnOut')) {fnOut}``r if (exists('fnOut1')){fnOut1}`, `r if (exists('fnOut2')){fnOut2}`
+* Output file for removed reads `r if (exists('fnOut1')){gsub('.fastq', 'X.fastq', fnOut1)}else {gsub('.fastq', 'X.fastq', fnOut)} `
 * Reads with more than `r uDefB` undefined bases removed.
 * Reads with more than `r nBs` bases with Phred score less than `r thres` removed
 
-
 ```{r}
-
+if (PE == 'N'){
 cnts = fastqFilt(fnIn, thres, nBs, uDefB, fnOut)
-
+}else if (PE == 'Y'){
+cnts = cnts = fastFilt_PE(fnIn1, fnIn2, thres, nBs, uDefB, fnOut1, fnOut2)
+}
 ```
 From `r cnts[1]` reads `r cnts[3]` were removed after failing quality check
 

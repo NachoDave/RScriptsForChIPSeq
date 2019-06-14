@@ -5,7 +5,7 @@ substrRight <- function(x, n){
 }
 
 # Function to trim single ended reads ==================================================#
-fastqFilt <- function(fid, thres = 30, nBs = 5, uDefB = 0, destination=sprintf("%s_rmNsAndLowQul.fastq", gsub('.fastq','', fid)))
+fastqFilt <- function(fid, thres = 30, nBs = 5, uDefB = 0, destination=gsub('.fastq','_Trim.fastq', fid))
 {
   
   if (substrRight(fid, 2) == 'gz'){
@@ -47,10 +47,21 @@ fastqFilt <- function(fid, thres = 30, nBs = 5, uDefB = 0, destination=sprintf("
     fq <- fq[filter(fq)] # use indexing to remove reads
     
     # remove reads with N bases
-    qcount <- rowSums(as(quality(fq), "matrix") <= thres) 
     
-    fqx <- fq[qcount >= nBs] # Number of reads where all Phred scores <= thres
-    fq <- fq[qcount < nBs] # Number of reads where all Phred scores > thres
+    #qcount <- rowSums(as(quality(fq), "matrix") <= thres) 
+    
+    #fqx <- fq[qcount >= nBs] # Number of reads where all Phred scores <= thres
+    #fq <- fq[qcount < nBs] # Number of reads where all Phred scores > thres
+    
+    q <- as(quality(fq), "matrix") <= thres # find base pairs with Phred score > thrs
+    q[is.na(q)] = FALSE # set any NA to FALSE (NAs occur when the read length varies between reads)
+    
+    qcount <- rowSums(q) # sum the rows to find number of bases that don't meet quality threshold
+    
+    qok <- qcount < nBs # get indeices of ok reads
+    
+    fqx <- fq[!qok] # Number of reads where all Phred scores <= thres
+    fq <- fq[qok] # Number of reads where all Phred scores > thres
     
     cnts[2] <- cnts[2] + length(fq)
     cnts[3] <- cnts[3] + length(fqx)
@@ -64,8 +75,8 @@ fastqFilt <- function(fid, thres = 30, nBs = 5, uDefB = 0, destination=sprintf("
 
 # Function to trim pair ended reads ==================================================#
 
-fastFilt_PE <- function(fid, fid2, thres = 30, nBs = 5, uDefB = 0, dest1 = sprintf("%s_rmNsAndLowQul.fastq", gsub('.fastq','', fid)), 
-dest2 = sprintf("%s_rmNsAndLowQul.fastq", gsub('.fastq','', fid2)))
+fastFilt_PE <- function(fid, fid2, thres = 30, nBs = 5, uDefB = 0, dest1 = gsub('.fastq','_Trim.fastq', fid), 
+dest2 =  gsub('.fastq','_Trim.fastq', fid2))
 {
   
   
@@ -83,7 +94,7 @@ dest2 = sprintf("%s_rmNsAndLowQul.fastq", gsub('.fastq','', fid2)))
   
   if(file.exists(dest1)){
     print(paste('Deleting file:', dest1))
-    file.remove(destination)
+    file.remove(dest1)
   }
   
   if(file.exists(dest2)){
@@ -164,5 +175,5 @@ dest2 = sprintf("%s_rmNsAndLowQul.fastq", gsub('.fastq','', fid2)))
     writeFastq(fq2, dest2x, "a", compress = cmprs)    
     #browser()
   }
-  
+  cnts1
 }
